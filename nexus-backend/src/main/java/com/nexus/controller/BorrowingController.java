@@ -13,11 +13,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/borrow")
 public class BorrowingController {
+    private static final Logger logger = LoggerFactory.getLogger(BorrowingController.class);
 
     @Autowired
     private BorrowRequestRepository borrowRequestRepository;
@@ -40,6 +43,7 @@ public class BorrowingController {
                 .orElseThrow(() -> new RuntimeException("Equipment not found"));
 
         if (equipment.getAvailableQuantity() <= 0) {
+            logger.warn("Equipment request failed: {} (ID: {}) is not available", equipment.getName(), equipmentId);
             return ResponseEntity.badRequest().body("Error: Equipment not available");
         }
 
@@ -56,6 +60,7 @@ public class BorrowingController {
         @SuppressWarnings("null")
         BorrowRequest savedRequest = borrowRequestRepository.save(borrowRequest);
 
+        logger.info("Borrow request created by {} for {} (ID: {})", username, equipment.getName(), equipmentId);
         return ResponseEntity.ok(savedRequest);
     }
 
@@ -69,11 +74,14 @@ public class BorrowingController {
             return ResponseEntity.status(403).body("Error: You can only cancel your own requests");
         }
 
-        if (request.getStatus() != RequestStatus.PENDING) {
-            return ResponseEntity.badRequest().body("Error: Only pending requests can be cancelled");
+        if (request.getStatus() == RequestStatus.APPROVED) {
+            Equipment equipment = request.getEquipment();
+            equipment.setAvailableQuantity(equipment.getAvailableQuantity() + 1);
+            equipmentRepository.save(equipment);
         }
 
         request.setStatus(RequestStatus.CANCELLED);
+        logger.info("Request ID: {} cancelled by user {}", requestId, username);
         return ResponseEntity.ok(borrowRequestRepository.save(request));
     }
 
@@ -131,12 +139,14 @@ public class BorrowingController {
 
         // Check Authorization
         if (!currentUser.getRole().equals(requiredRole) && !currentUser.getRole().equals(Role.ADMIN)) {
+            logger.warn("Unauthorized approval attempt for Request ID: {} by user {} (Required Role: {})", requestId, username, requiredRole);
             return ResponseEntity.status(403).body("Error: You are not authorized for this approval step (Required: " + requiredRole + ")");
         }
 
         // Specific logic for STAFF level: check if it's the designated approver
         if (requiredRole == Role.STAFF && request.getDesignatedStaffApprover() != null) {
             if (!request.getDesignatedStaffApprover().getUsername().equals(currentUser.getUsername())) {
+                logger.warn("Unauthorized STAFF approval attempt for Request ID: {} by {}. Designated approver is {}", requestId, username, request.getDesignatedStaffApprover().getUsername());
                 return ResponseEntity.status(403).body("Error: This request is specifically assigned to " + request.getDesignatedStaffApprover().getUsername() + " for Level 1 approval.");
             }
         }
@@ -159,9 +169,19 @@ public class BorrowingController {
         }
 
         if (isFinalStep) {
-            finalizeApproval(request);
+            if (request.getStatus() != RequestStatus.APPROVED) {
+                if (request.getEquipment().getAvailableQuantity() <= 0) {
+                    return ResponseEntity.badRequest().body("Error: Equipment no longer available for final approval");
+                }
+                finalizeApproval(request);
+            } else {
+                // Already approved (was an extension), just set status to APPROVED again to clear extension flags if any
+                request.setStatus(RequestStatus.APPROVED);
+                request.setExtensionRequested(false);
+            }
         } else {
             request.setCurrentStep(request.getCurrentStep() + 1);
+            logger.info("Request ID: {} approved at Step {} by {}", requestId, request.getCurrentStep() - 1, username);
         }
 
         return ResponseEntity.ok(borrowRequestRepository.save(request));
@@ -182,6 +202,7 @@ public class BorrowingController {
 
         request.setStatus(RequestStatus.REJECTED);
         request.setRejectionRemarks(rejectionDetails.getRejectionRemarks());
+        logger.info("Request ID: {} rejected by {}", requestId, SecurityContextHolder.getContext().getAuthentication().getName());
         return ResponseEntity.ok(borrowRequestRepository.save(request));
     }
 
@@ -201,6 +222,7 @@ public class BorrowingController {
 
         request.setStatus(RequestStatus.RETURNED);
         request.setActualReturnDate(LocalDateTime.now());
+        logger.info("Request ID: {} marked as RETURNED by {}", requestId, SecurityContextHolder.getContext().getAuthentication().getName());
         return ResponseEntity.ok(borrowRequestRepository.save(request));
     }
 
