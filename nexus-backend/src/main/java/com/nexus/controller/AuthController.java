@@ -78,7 +78,7 @@ public class AuthController {
                 .email(signUpRequest.getEmail())
                 .password(encoder.encode(signUpRequest.getPassword()))
                 .role(Role.valueOf(signUpRequest.getRole().toUpperCase()))
-                .enabled(true)
+                .enabled(false)
                 .build();
 
         userRepository.save(user);
