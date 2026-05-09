@@ -4,14 +4,13 @@ services:
   db:
     image: mysql:8.0
     container_name: nexus-db-${ENV_NAME:-local}
-    restart: always
     environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: nexusdb
       MYSQL_USER: nexususer
       MYSQL_PASSWORD: nexuspass
-      MYSQL_ROOT_PASSWORD: rootpassword
     ports:
-      - "${DB_PORT:-3307}:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
       - nexus-db-data-${ENV_NAME:-local}:/var/lib/mysql
 
@@ -19,27 +18,27 @@ services:
     build: ./nexus-backend
     container_name: nexus-backend-${ENV_NAME:-local}
     restart: always
-    depends_on:
-      - db
     ports:
       - "${BE_PORT:-8080}:8080"
     environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/nexusdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: nexususer
       SPRING_DATASOURCE_PASSWORD: nexuspass
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+    depends_on:
+      - db
 
   frontend:
     build: ./nexus-frontend
     container_name: nexus-frontend-${ENV_NAME:-local}
     restart: always
+    ports:
+      - "${FE_PORT:-5173}:80"
     depends_on:
       - backend
-    ports:
-      - "${FE_PORT:-80}:80"
 
 volumes:
   nexus-db-data-local:
-  nexus-db-data-develop:
+  nexus-db-data-main:
   nexus-db-data-uat:
-  nexus-db-data-prod:
+  nexus-db-data-develop:

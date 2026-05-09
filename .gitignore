@@ -1,0 +1,16 @@
+# Maven
+target/
+*.class
+
+# Node
+node_modules/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.log
+
+# Docker
+.docker/
