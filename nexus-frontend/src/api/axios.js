@@ -4,9 +4,9 @@ const getBaseURL = () => {
   const { hostname, port } = window.location;
   
   // Mapping frontend ports to backend ports for EC2 environments
-  if (port === '8000') return `http://${hostname}:8080/api`; // Main
-  if (port === '8001') return `http://${hostname}:8081/api`; // UAT
-  if (port === '8002') return `http://${hostname}:8082/api`; // Develop
+  if (port === '9000') return `http://${hostname}:9080/api`; // Main
+  if (port === '9001') return `http://${hostname}:9081/api`; // UAT
+  if (port === '9002') return `http://${hostname}:9082/api`; // Develop
   
   // Fallback for local development
   return 'http://localhost:8080/api';
