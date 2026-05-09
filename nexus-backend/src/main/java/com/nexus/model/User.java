@@ -30,5 +30,5 @@ public class User {
     private Role role;
 
     @Builder.Default
-    private boolean enabled = false;
+    private boolean enabled = true;
 }
