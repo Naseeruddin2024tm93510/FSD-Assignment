@@ -25,6 +25,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/nexusdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: nexususer
       SPRING_DATASOURCE_PASSWORD: nexuspass
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
       - db
 
