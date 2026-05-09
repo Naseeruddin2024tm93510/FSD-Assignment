@@ -60,7 +60,7 @@ pipeline {
                         envName = "main"
                         fePort = "80"
                         bePort = "8081"
-                        dbPort = "3306"
+                        dbPort = "3309"
                     } else if (env.BRANCH_NAME == 'uat') {
                         envName = "uat"
                         fePort = "81"
