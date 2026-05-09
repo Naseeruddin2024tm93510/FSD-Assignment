@@ -52,20 +52,20 @@ pipeline {
             steps {
                 script {
                     def envName = "develop"
-                    def fePort = "82"
-                    def bePort = "8083"
-                    def dbPort = "3308"
+                    def fePort = "5000"
+                    def bePort = "5080"
+                    def dbPort = "5306"
 
                     if (env.BRANCH_NAME == 'main') {
                         envName = "main"
-                        fePort = "80"
-                        bePort = "8081"
-                        dbPort = "3309"
+                        fePort = "7000"
+                        bePort = "7080"
+                        dbPort = "7306"
                     } else if (env.BRANCH_NAME == 'uat') {
                         envName = "uat"
-                        fePort = "81"
-                        bePort = "8082"
-                        dbPort = "3307"
+                        fePort = "6000"
+                        bePort = "6080"
+                        dbPort = "6306"
                     }
 
                     echo "Deploying to ${envName} environment..."
