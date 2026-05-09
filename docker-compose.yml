@@ -17,11 +17,12 @@ services:
   backend:
     build: ./nexus-backend
     container_name: nexus-backend-${ENV_NAME:-local}
+    restart: always
     ports:
       - "${BE_PORT:-8080}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/nexusdb?createDatabaseIfNotExist=true&useSSL=false
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/nexusdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: nexususer
       SPRING_DATASOURCE_PASSWORD: nexuspass
     depends_on:
@@ -30,6 +31,7 @@ services:
   frontend:
     build: ./nexus-frontend
     container_name: nexus-frontend-${ENV_NAME:-local}
+    restart: always
     ports:
       - "${FE_PORT:-5173}:80"
     depends_on:
