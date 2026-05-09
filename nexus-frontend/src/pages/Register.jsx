@@ -23,7 +23,8 @@ const Register = () => {
       await API.post('/auth/signup', formData);
       setSuccess(true);
     } catch (err) {
-      setError(err.response?.data || 'Registration failed. Please check your details.');
+      console.error('Registration error:', err);
+      setError(err.response?.data?.message || err.response?.data || 'Registration failed. Check if username exists.');
     } finally {
       setIsLoading(false);
     }

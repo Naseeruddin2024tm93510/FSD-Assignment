@@ -41,7 +41,7 @@ const Dashboard = () => {
       const res = await API.get('/equipment');
       setItems(res.data);
     } catch (err) {
-      console.error('Failed to fetch items');
+      console.error('Failed to fetch items:', err);
     }
   };
 

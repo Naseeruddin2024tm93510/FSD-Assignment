@@ -78,11 +78,10 @@ public class AuthController {
                 .email(signUpRequest.getEmail())
                 .password(encoder.encode(signUpRequest.getPassword()))
                 .role(Role.valueOf(signUpRequest.getRole().toUpperCase()))
+                .enabled(true)
                 .build();
 
-        @SuppressWarnings("null")
-        User savedUser = user;
-        userRepository.save(savedUser);
+        userRepository.save(user);
 
         logger.info("New user registered successfully: {} with role {}", user.getUsername(), user.getRole());
         return ResponseEntity.ok("User registered successfully!");

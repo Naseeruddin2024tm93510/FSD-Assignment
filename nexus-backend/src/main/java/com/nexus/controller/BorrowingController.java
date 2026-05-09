@@ -145,9 +145,9 @@ public class BorrowingController {
 
         // Specific logic for STAFF level: check if it's the designated approver
         if (requiredRole == Role.STAFF && request.getDesignatedStaffApprover() != null) {
-            if (!request.getDesignatedStaffApprover().getUsername().equals(currentUser.getUsername())) {
-                logger.warn("Unauthorized STAFF approval attempt for Request ID: {} by {}. Designated approver is {}", requestId, username, request.getDesignatedStaffApprover().getUsername());
-                return ResponseEntity.status(403).body("Error: This request is specifically assigned to " + request.getDesignatedStaffApprover().getUsername() + " for Level 1 approval.");
+            if (request.getDesignatedStaffApprover() == null || !request.getDesignatedStaffApprover().getUsername().equals(currentUser.getUsername())) {
+                logger.warn("Unauthorized STAFF approval attempt for Request ID: {} by {}. Designated approver is {}", requestId, username, request.getDesignatedStaffApprover()?.getUsername());
+                return ResponseEntity.status(403).body("Error: This request is specifically assigned to a different teacher for Level 1 approval.");
             }
         }
 
